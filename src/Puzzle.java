@@ -1,6 +1,6 @@
 /**
  *This class defines a 3x3 sudoku puzzle and all its properties
- * contains methods to populate the arrays, check for valid values, and print the puzzle for easy reading
+ * contains methods to populate the arrays, check for valid values, print the puzzle for easy reading, and solve the puzzle
  */
 public class Puzzle {
     /** 9x9 Array that represents a sudoku puzzle*/
@@ -135,6 +135,7 @@ public class Puzzle {
     }
     
 
+    //maybe change the name of the boolean to something clearer?
     public boolean checkRange(int row, int column) {
         boolean passCheck = true;
 
@@ -212,11 +213,9 @@ public class Puzzle {
         int iterationCounter = 0; //tracks the number of iterations
         int row = 0; //row number
         int column = 0; //column number
-        int switchInt = 2; //start at step 2
+        int switchInt = 2; //start at step 2 //why start on step 2? maybe reconsider the numbering?
         boolean exitWhenFalse = true;
-
-
-        do {
+        do { //Q: is this the best structure for this algorithm?
             switch (switchInt) {
 
                 case 2: { //Check the clueSpace value
@@ -226,6 +225,7 @@ public class Puzzle {
                     else if (clueSpace[row][column] == 0) { //value is variable
                         switchInt = 3; //go to step 3
                     }
+                    // why can't this just be an else?
                     else if ( clueSpace[row][column] == 1 && (row != 8 || column != 8) ) { //value is constant and only one coordinate can be == 8
                         switchInt = 4; //go to step 4
                     }
@@ -237,7 +237,9 @@ public class Puzzle {
                 case 3: { //Increment puzzleSpace entry, run check, increment iterationCounter
                     puzzleSpace[row][column]++; //increment before checking
                     iterationCounter++;
-
+                    
+                    //calling fullcheck every time complicates the logic and slows things down
+                    //it should be callled once and assigned to a local variable
                     if (row == 8 && column == 8 && fullCheck(row, column) == true) { //successful and at final entry
                         switchInt = 7; //end solve
                     }
@@ -247,6 +249,7 @@ public class Puzzle {
                     else if (puzzleSpace[row][column] < 9 && fullCheck(row, column) == false) { //unsuccessful and still options left to try
                         //repeat Step 3
                     }
+                    // can't this also just be an else?
                     else if (puzzleSpace[row][column] >= 9 && fullCheck(row, column) == false) { //unsuccessful with no remaining options
                         switchInt = 5; // go to step 5
                     }
@@ -256,11 +259,13 @@ public class Puzzle {
                 }
 
                 case 4: { //move to next position
-                    if (column < 8) { //not at end of column
+                    if (column < 8) { //not at end of row
                         column++;
+                        // it's unnecessary to have this twice, move it to the end
                         switchInt = 2; //return to step 2
                     }
-                    else if (column == 8) { //end of column
+                    // this should just be an else
+                    else if (column == 8) { //end of row
                         column = 0;
                         row++;
                         switchInt = 2; //return to step 2
@@ -270,22 +275,28 @@ public class Puzzle {
                     break;
                 }
 
-                case 5: { //moves to previous position
-                    if (column != 0 && clueSpace[row][column] == 1) { //constant value not at start of column
+                case 5: { //moves to previous position, zeroes out current position if variable
+                    //the logic here can be simplified to two steps, if it's variable zero it out
+                    //then back up based on whether or not it's at the start of the row
+                    //if done right no commands should be repeated here
+                    
+                    if (column != 0 && clueSpace[row][column] == 1) { //constant value not at start of row
                         column--;
+                        //everything goes to step 6 anyway we only need to say it once
                         switchInt = 6; // go to Step 6
                     }
-                    else if (column == 0 && clueSpace[row][column] == 1) { //constant value at start of column
+                    else if (column == 0 && clueSpace[row][column] == 1) { //constant value at start of row
                         column = 8;
                         row--;
                         switchInt = 6;
                     }
-                    else if (column != 0 && clueSpace[row][column] == 0) { //variable value not at start of column
+                    else if (column != 0 && clueSpace[row][column] == 0) { //variable value not at start of row
                         puzzleSpace[row][column] = 0; // reset value
                         column--;
                         switchInt = 6;
                     }
-                    else if (column == 0 && clueSpace[row][column] == 0) { // variable value at start of column
+                    // maybe just else?
+                    else if (column == 0 && clueSpace[row][column] == 0) { // variable value at start of row
                         puzzleSpace[row][column] = 0;
                         column = 8;
                         row--;
